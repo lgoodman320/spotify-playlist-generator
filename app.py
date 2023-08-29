@@ -2,11 +2,18 @@ import spotipy
 import openai
 import json
 from dotenv import dotenv_values
+import argparse
 
 # Load .env file
 config = dotenv_values(".env")
 
 openai.api_key = config["OPENAI_API_KEY"]
+
+parser = argparse.ArgumentParser(description='Simple command line song utility.')
+parser.add_argument("-p", type=str, default="openai suggestions", help="The prompt to describe the playlist")
+parser.add_argument("-n", type=int, default=8, help="The number of songs to add to the playlist")
+
+args = parser.parse_args()
 
 def get_playlist(prompt, count=8):
     example_json = """
@@ -38,7 +45,7 @@ def get_playlist(prompt, count=8):
     playlist = json.loads(response["choices"][0]["message"]["content"])
     return playlist
 
-playlist = get_playlist("fight songs", 5)
+playlist = get_playlist(args.p, args.n)
 print(playlist)
 
 spot = spotipy.Spotify(
@@ -64,7 +71,7 @@ for item in playlist:
 created_playlist = spot.user_playlist_create(
     current_user["id"],
     public=False,
-    name="TESTING PLAYLIST FUN"
+    name=args.p
 )
 
 # Add songs to playlist
